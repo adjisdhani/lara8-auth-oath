@@ -3,6 +3,8 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Auth\AuthenticationException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -32,10 +34,29 @@ class Handler extends ExceptionHandler
      *
      * @return void
      */
-    public function register()
+    public function register_old()
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+    }
+
+    public function register()
+    {
+        // Tangani TokenExpiredException
+        $this->renderable(function (TokenExpiredException $e, $request) {
+            return response()->json([
+                'error' => 'Token expired',
+                'message' => 'Please refresh your token to continue.'
+            ], 401);
+        });
+
+        // Tangani AuthenticationException
+        $this->renderable(function (AuthenticationException $e, $request) {
+            return response()->json([
+                'error' => 'Invalid token',
+                'message' => 'Please provide a valid token.'
+            ], 401);
         });
     }
 }
